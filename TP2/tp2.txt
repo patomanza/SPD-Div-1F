@@ -1,14 +1,23 @@
 // C++ code
-//
+
 #include <Keypad.h>
 #include <LiquidCrystal.h>
+#define passwordLen 7
+
+int ingresos = 0;
+static int lcdCol = 8;
+char contrasenaDef[passwordLen]="2C2022";
+char passwordIngresada[passwordLen];
+unsigned long millisAntes = 0;  
+const long intervalo = 1000;
+int estadoLed = LOW;
+int botonResetAntes = LOW;
+int estadoBoton = LOW;
 
 LiquidCrystal miLCD(8,13,A0,A1,A2,A3);
 
 const byte FILAS = 4;
 const byte COLUMNAS = 4;
-
-
 
 char caracteres [4] [4] =
 {
@@ -21,18 +30,15 @@ char caracteres [4] [4] =
 byte pinesFilas[] = {7,6,5,4};
 byte pinesColumnas[] = {3,2,1,0};
 
-
-
 Keypad keypad = Keypad(makeKeymap(caracteres),pinesFilas,pinesColumnas,FILAS,COLUMNAS);
-
-
-
 
 void setup()
 {
   miLCD.begin(16,2);
-  pinMode(LED_BUILTIN, OUTPUT);
-  Serial.begin(9600);
+  pinMode(9, OUTPUT);
+  pinMode(10, OUTPUT);  
+  pinMode(12,INPUT);
+  pinMode(11,INPUT);
 }
 
 void loop()
@@ -40,16 +46,104 @@ void loop()
   miLCD.setCursor(0,0);
   miLCD.print("Password:");
   
-  char boton = keypad.getKey();// lee lo pulsado en el teclado o un define de no click
+  char boton = keypad.getKey();
   
   if(boton != NO_KEY)
   {
-    miLCD.print(boton);
-   
+    imprimirPassword(boton);
   }
-
-     
-  delay(25);
   
+  botonReset();
+  
+  
+  delay(50);
   
 }
+
+void imprimirPassword(char boton)//Imprime la password ingresada por el usuario y verifica si es la misma que la predeterminada
+{
+ 	
+  if(boton != '*' && boton != '#')
+  {
+   	passwordIngresada[ingresos] = boton;
+    if(ingresos < 6)
+    {
+      ingresos++;
+    }
+    
+    miLCD.setCursor(++lcdCol,0);
+    miLCD.print(boton);
+       
+    if(ingresos == 6)
+    {
+    	if(!strcmp(passwordIngresada, contrasenaDef))
+		{
+    		miLCD.setCursor(0,1);
+          	miLCD.print("Password Ok");
+        }
+      	else
+		{ 
+            miLCD.setCursor(0,1);
+			miLCD.print("Password Fail");
+    	} 		
+    }    
+ }
+}
+
+void parpadeoLedVerde()//Funcion para generar el parpadeo de los leds
+{
+  unsigned long millisAhora = millis();
+
+  if (millisAhora - millisAntes >= intervalo) 
+  {
+    millisAntes = millisAhora;
+    
+  	if(estadoLed == LOW)
+    {
+      estadoLed = HIGH;
+    }
+    else
+    {
+      estadoLed = LOW;
+    }
+
+    digitalWrite(9, estadoLed);
+  }
+  
+} 
+void parpadeoLedRojo()//Funcion para generar el parpadeo de los leds
+{
+  unsigned long millisAhora = millis();
+
+  if (millisAhora - millisAntes >= intervalo) 
+  {
+    millisAntes = millisAhora;
+    for(int i=0;i<5;i++)
+    {	
+        digitalWrite(10,HIGH);      	
+    }
+  }
+  
+} 
+  
+
+void botonReset()
+{
+  
+  int botonResetAhora = digitalRead(12);
+  
+  if(botonResetAhora == HIGH && botonResetAntes == LOW)
+  {
+    estadoBoton = !estadoBoton;
+    miLCD.clear();
+    miLCD.setCursor(0,0);
+    miLCD.print("Password:");
+    ingresos = 0;
+  }
+  
+  botonResetAntes = botonResetAhora;
+  
+}
+  
+  
+  
