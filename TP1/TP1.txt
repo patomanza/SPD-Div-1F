@@ -1,0 +1,45 @@
+// C++ code
+//configuracion pulldown, preguntaria por 1 no por 0, AVERIGUAR MAS
+#define Led1 4
+#define Led2 5
+#define Led3 6
+#define Led4 7 
+#define Led5 8
+#define Led6 9
+#define Led7 10
+#define Led8 11
+#define Led9 12
+#define Led10 13
+
+
+
+void setup()
+{
+  pinMode(13, OUTPUT);
+  pinMode(12, OUTPUT);
+  pinMode(11, OUTPUT);
+  pinMode(10, OUTPUT);
+  pinMode(9, OUTPUT);
+  pinMode(8, OUTPUT);
+  pinMode(7, OUTPUT);
+  pinMode(6, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(4, OUTPUT);
+  pinMode(3, INPUT);//reset
+  pinMode(2, INPUT);// pausa/continuar
+  
+  Serial.begin(9600);//para utilizar monitor en serie
+}
+int segundos;
+int segundoAntes=0;
+int numerosBinarios[10];
+int estadoAntes =0;
+int estadoAhora;
+
+void loop()
+{
+  Serial.print("Segundos: ");
+  segundos = millis() /1000;
+
+  delay(50);
+}
