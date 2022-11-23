@@ -2,23 +2,18 @@
 
 #include <Keypad.h>
 #include <LiquidCrystal.h>
+#include <Servo.h>
 #define passwordLen 7
 
 const int ledRojo = 10;
 const int ledVerde = 9;
-unsigned long millisAntes = 0;
-const long intervalo = 5000;
-
-
+int estadoLed = LOW;
 
 int ingresos = 0;
 int lcdCol = 8;
 char contrasenaDef[passwordLen]="2C2022";
 char contrasenaCreada[passwordLen];
 char passwordIngresada[passwordLen];
-
-
-int estadoLed = LOW;
 
 int botonResetAntes = LOW;
 int estadoBotonReset = LOW;
@@ -29,7 +24,10 @@ int estadoBotonTest = LOW;
 int botonConfigAntes = LOW;
 int estadoBotonConfig = LOW;
 
+int anguloCorrecto = 0;
+int anguloDefault = 90;
 
+Servo miServo;
 
 LiquidCrystal miLCD(8,13,A0,A1,A2,A3);
 
@@ -56,12 +54,16 @@ void setup()
   pinMode(ledRojo, OUTPUT);  
   pinMode(12,INPUT);
   pinMode(11,INPUT);
+  miServo.attach(A5);
+  miServo.write(anguloDefault);
+  
 }
 
 void loop()
 {
   miLCD.setCursor(0,0);
   miLCD.print("Password:");
+ 
   
   char boton = keypad.getKey();
   
@@ -72,9 +74,8 @@ void loop()
   
   botonReset();
   botonTestPsw();
+  botonConfig();
  
-  
-  
   delay(50);
   
 }
@@ -100,6 +101,7 @@ void imprimirPassword(char boton)//Imprime la password ingresada por el usuario 
     		miLCD.setCursor(0,1);
           	miLCD.print("Password Ok");
             digitalWrite(ledVerde,HIGH);
+          	miServo.write(anguloCorrecto);
         }
       	else
 		{ 
@@ -157,6 +159,7 @@ void botonReset()
     miLCD.print("Password:");
     ingresos = 0;
     lcdCol = 8;
+    miServo.write(anguloDefault);
   }
   
   botonResetAntes = botonResetAhora;
