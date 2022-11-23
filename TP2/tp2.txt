@@ -4,15 +4,32 @@
 #include <LiquidCrystal.h>
 #define passwordLen 7
 
+const int ledRojo = 10;
+const int ledVerde = 9;
+unsigned long millisAntes = 0;
+const long intervalo = 5000;
+
+
+
 int ingresos = 0;
-static int lcdCol = 8;
+int lcdCol = 8;
 char contrasenaDef[passwordLen]="2C2022";
+char contrasenaCreada[passwordLen];
 char passwordIngresada[passwordLen];
-unsigned long millisAntes = 0;  
-const long intervalo = 1000;
+
+
 int estadoLed = LOW;
+
 int botonResetAntes = LOW;
-int estadoBoton = LOW;
+int estadoBotonReset = LOW;
+
+int botonTestAntes = LOW;
+int estadoBotonTest = LOW;
+
+int botonConfigAntes = LOW;
+int estadoBotonConfig = LOW;
+
+
 
 LiquidCrystal miLCD(8,13,A0,A1,A2,A3);
 
@@ -35,8 +52,8 @@ Keypad keypad = Keypad(makeKeymap(caracteres),pinesFilas,pinesColumnas,FILAS,COL
 void setup()
 {
   miLCD.begin(16,2);
-  pinMode(9, OUTPUT);
-  pinMode(10, OUTPUT);  
+  pinMode(ledVerde, OUTPUT);
+  pinMode(ledRojo, OUTPUT);  
   pinMode(12,INPUT);
   pinMode(11,INPUT);
 }
@@ -54,6 +71,8 @@ void loop()
   }
   
   botonReset();
+  botonTestPsw();
+ 
   
   
   delay(50);
@@ -80,24 +99,24 @@ void imprimirPassword(char boton)//Imprime la password ingresada por el usuario 
 		{
     		miLCD.setCursor(0,1);
           	miLCD.print("Password Ok");
+            digitalWrite(ledVerde,HIGH);
         }
       	else
 		{ 
             miLCD.setCursor(0,1);
 			miLCD.print("Password Fail");
+          	digitalWrite(ledRojo,HIGH);
     	} 		
     }    
  }
 }
+  
+  
 
-void parpadeoLedVerde()//Funcion para generar el parpadeo de los leds
+
+/*void parpadeoLedVerde()//Funcion para generar el parpadeo de los leds
 {
-  unsigned long millisAhora = millis();
-
-  if (millisAhora - millisAntes >= intervalo) 
-  {
-    millisAntes = millisAhora;
-    
+  
   	if(estadoLed == LOW)
     {
       estadoLed = HIGH;
@@ -107,24 +126,22 @@ void parpadeoLedVerde()//Funcion para generar el parpadeo de los leds
       estadoLed = LOW;
     }
 
-    digitalWrite(9, estadoLed);
-  }
-  
-} 
+    digitalWrite(9,HIGH);
+}
+
 void parpadeoLedRojo()//Funcion para generar el parpadeo de los leds
 {
-  unsigned long millisAhora = millis();
-
-  if (millisAhora - millisAntes >= intervalo) 
-  {
-    millisAntes = millisAhora;
-    for(int i=0;i<5;i++)
-    {	
-        digitalWrite(10,HIGH);      	
+  	if( estadoLed == LOW)
+    {
+      estadoLed = HIGH;
+      digitalWrite(ledRojo,estadoLed);
     }
-  }
-  
-} 
+ 	else
+    {
+      estadoLed = LOW;
+      digitalWrite(ledRojo,estadoLed);
+    }  
+} */
   
 
 void botonReset()
@@ -134,16 +151,53 @@ void botonReset()
   
   if(botonResetAhora == HIGH && botonResetAntes == LOW)
   {
-    estadoBoton = !estadoBoton;
+    estadoBotonReset = !estadoBotonReset;
     miLCD.clear();
     miLCD.setCursor(0,0);
     miLCD.print("Password:");
     ingresos = 0;
+    lcdCol = 8;
   }
   
   botonResetAntes = botonResetAhora;
   
 }
+
+void botonTestPsw()
+{
+  int botonTestAhora = digitalRead(11);
   
+  if(botonTestAhora == HIGH && botonTestAntes == LOW)
+  {
+    estadoBotonTest = !estadoBotonTest;
+  	if(ingresos < 6)
+    {
+    	if(!strcmp(passwordIngresada, contrasenaDef))
+		{
+    		miLCD.setCursor(0,1);
+          	miLCD.print("Password Ok");
+        }
+      	else
+		{
+            miLCD.setCursor(0,1);
+			miLCD.print("Password Fail");
+    	} 		
+    }    	
+
+  }
+}
+
+void botonConfig()
+{
+  int botonConfigAhora = analogRead(A4);
   
+  if(botonConfigAhora == HIGH && botonConfigAntes == LOW)
+  {
+    estadoBotonConfig = !estadoBotonConfig;
+	
+    strcpy(contrasenaCreada,passwordIngresada);
+    
+    contrasenaDef[passwordLen] = contrasenaCreada[ingresos];
+  }
   
+}
